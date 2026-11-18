@@ -34,17 +34,30 @@ jobs:
             .renovaterc.json \
             CHANGELOG.md
 
-      - name: Initialize README
-        # replace {repo} and {owner} with the actual values
+      - name: Compute AEM Site and Org Names
+        # AEM serves the site at https://{branch}--{site}--{org}.aem.page, where site and org are
+        # the repository and owner names made hostname-safe: lowercased, and every run of characters
+        # other than letters and digits turned into one dash (e.g. My_Site becomes my-site)
         run: |
+          aem_name() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'; }
+          echo "AEM_SITE=$(aem_name "${GITHUB_REPOSITORY#*/}")" >> "$GITHUB_ENV"
+          echo "AEM_ORG=$(aem_name "${GITHUB_REPOSITORY%%/*}")" >> "$GITHUB_ENV"
+
+      - name: Initialize README
+        # replace {repo} and {owner} with the actual values; in preview and live
+        # hostnames (--{repo}--{owner}.) with the AEM site and org names
+        run: |
+          sed -i.bak "s/--{repo}--{owner}\./--${AEM_SITE}--${AEM_ORG}./g" README.md
           sed -i.bak "s/{repo}/$(basename ${{ github.repository }})/g" README.md
           sed -i.bak "s/{owner}/$(dirname ${{ github.repository }})/g" README.md
       - name: Initialize AGENTS.md
         run: |
+          sed -i.bak "s/--{repo}--{owner}\./--${AEM_SITE}--${AEM_ORG}./g" AGENTS.md
           sed -i.bak "s/{repo}/$(basename ${{ github.repository }})/g" AGENTS.md
           sed -i.bak "s/{owner}/$(dirname ${{ github.repository }})/g" AGENTS.md
       - name: Initialize Pull Request Template
         run: |
+          sed -i.bak "s/--{repo}--{owner}\./--${AEM_SITE}--${AEM_ORG}./g" .github/pull_request_template.md
           sed -i.bak "s/{repo}/$(basename ${{ github.repository }})/g" .github/pull_request_template.md
           sed -i.bak "s/{owner}/$(dirname ${{ github.repository }})/g" .github/pull_request_template.md
 
