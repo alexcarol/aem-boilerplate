@@ -44,20 +44,23 @@ jobs:
           echo "AEM_ORG=$(aem_name "${GITHUB_REPOSITORY%%/*}")" >> "$GITHUB_ENV"
 
       - name: Initialize README
-        # replace {repo} and {owner} with the actual values; in preview and live
-        # hostnames (--{repo}--{owner}.) with the AEM site and org names
+        # replace {repo} and {owner} with the repository's own names, and {site} and {org}
+        # (used in preview and live hostnames) with the names AEM serves it under
         run: |
-          sed -i.bak "s/--{repo}--{owner}\./--${AEM_SITE}--${AEM_ORG}./g" README.md
+          sed -i.bak "s/{site}/${AEM_SITE}/g" README.md
+          sed -i.bak "s/{org}/${AEM_ORG}/g" README.md
           sed -i.bak "s/{repo}/$(basename ${{ github.repository }})/g" README.md
           sed -i.bak "s/{owner}/$(dirname ${{ github.repository }})/g" README.md
       - name: Initialize AGENTS.md
         run: |
-          sed -i.bak "s/--{repo}--{owner}\./--${AEM_SITE}--${AEM_ORG}./g" AGENTS.md
+          sed -i.bak "s/{site}/${AEM_SITE}/g" AGENTS.md
+          sed -i.bak "s/{org}/${AEM_ORG}/g" AGENTS.md
           sed -i.bak "s/{repo}/$(basename ${{ github.repository }})/g" AGENTS.md
           sed -i.bak "s/{owner}/$(dirname ${{ github.repository }})/g" AGENTS.md
       - name: Initialize Pull Request Template
         run: |
-          sed -i.bak "s/--{repo}--{owner}\./--${AEM_SITE}--${AEM_ORG}./g" .github/pull_request_template.md
+          sed -i.bak "s/{site}/${AEM_SITE}/g" .github/pull_request_template.md
+          sed -i.bak "s/{org}/${AEM_ORG}/g" .github/pull_request_template.md
           sed -i.bak "s/{repo}/$(basename ${{ github.repository }})/g" .github/pull_request_template.md
           sed -i.bak "s/{owner}/$(dirname ${{ github.repository }})/g" .github/pull_request_template.md
 
